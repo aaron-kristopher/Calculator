@@ -1,14 +1,31 @@
 import java.util.*;
 
 public class CalculatorProject {
+    private static Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
-        Scanner scan = new Scanner(System.in);
 
         System.out.print("Enter your equation: ");
-        String equation = scan.nextLine();
+        String equation = scanner.nextLine();
 
         // parses the equation, separating numbers and operators
+        ArrayList<String> infix = convertToInfix(equation);
 
+        // shows the result of convertion of infix to postfix
+        ArrayList<String> postfix = infixToPostfix(infix);
+
+        System.out.print("Postfix Equivalence: ");
+        for (String postfixElement : postfix) {
+            System.out.print(postfixElement + " ");
+        }
+        System.out.println();
+
+        // shows the result of the postfix evalutation
+
+        System.out.println("Result: " + evaluatePostfix(postfix));
+    }
+
+    private static ArrayList<String> convertToInfix(String equation) {
         ArrayList<String> infix = new ArrayList<>();
         for (int i = 0; i < equation.length(); i++) {
             char equationCharacter = equation.charAt(i);
@@ -23,25 +40,13 @@ public class CalculatorProject {
             } else {
                 infix.add(Character.toString(equationCharacter));
             }
-
         }
-
-        // shows the result of convertion of infix to postfix
-        ArrayList<String> postfix = infixToPostfix(infix);
-        System.out.print("Postfix Equivalence: ");
-        for (String s : postfix) {
-            System.out.print(s + " ");
-        }
-        System.out.println();
-
-        // shows the result of the postfix evalutation
-
-        System.out.println("Result: " + evaluatePostfix(postfix));
+        return infix;
     }
 
     public static ArrayList<String> infixToPostfix(ArrayList<String> infix) {
         ArrayList<String> postfix = new ArrayList<>();
-        ArrayList<String> tempStorage = new ArrayList<>();
+        ArrayList<String> operationArray = new ArrayList<>();
 
         for (int i = 0; i < infix.size(); i++) {
             String infixElement = infix.get(i);
@@ -50,40 +55,41 @@ public class CalculatorProject {
                 postfix.add(infixElement);
 
             } else if (infixElement.equals("(")) {
-                tempStorage.add(infixElement);
+                operationArray.add(infixElement);
 
             } else if (infixElement.equals(")")) {
 
-                for (int storageElemIndex = tempStorage.size() - 1; storageElemIndex >= 0; storageElemIndex--) {
+                for (int operationIndex = operationArray.size() - 1; operationIndex >= 0; operationIndex--) {
 
-                    String storageElement = tempStorage.get(storageElemIndex);
+                    String operation = operationArray.get(operationIndex);
 
-                    if (storageElement.equals("(")) {
-                        tempStorage.remove(storageElemIndex);
+                    if (operation.equals("(")) {
+                        operationArray.remove(operationIndex);
                         break;
 
                     }
-                    postfix.add(storageElement);
-                    tempStorage.remove(storageElemIndex);
+                    postfix.add(operation);
+                    operationArray.remove(operationIndex);
                 }
 
             } else {
-                for (int storageElemIndex = tempStorage.size() - 1; storageElemIndex >= 0; storageElemIndex--) {
+                for (int operationIndex = operationArray.size() - 1; operationIndex >= 0; operationIndex--) {
 
-                    String storageElement = tempStorage.get(storageElemIndex);
-                    if (storageElement.equals("(") || order(storageElement) < order(infixElement)) {
+                    String operation = operationArray.get(operationIndex);
+
+                    if (operation.equals("(") || order(operation) < order(infixElement)) {
                         break;
                     }
-                    postfix.add(storageElement);
-                    tempStorage.remove(storageElemIndex);
+                    postfix.add(operation);
+                    operationArray.remove(operationIndex);
                 }
-                tempStorage.add(infixElement);
+                operationArray.add(infixElement);
             }
         }
 
-        for (int storageElement = tempStorage.size() - 1; storageElement >= 0; storageElement--) {
-            postfix.add(tempStorage.get(storageElement));
-            tempStorage.remove(storageElement);
+        for (int operation = operationArray.size() - 1; operation >= 0; operation--) {
+            postfix.add(operationArray.get(operation));
+            operationArray.remove(operation);
         }
 
         return postfix;
